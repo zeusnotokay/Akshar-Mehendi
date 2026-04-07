@@ -1,0 +1,105 @@
+/* Custom Styles overriding Tailwind if necessary */
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+:root {
+  --color-maroon: #6C2B1D;    /* Deep Henna Color */
+  --color-gold: #D4AF37;      /* Gold accent */
+  --color-cream: #FAF9F6;     /* Cream background */
+  --color-dark: #1A1A1A;      /* Text dark */
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--color-cream);
+  color: var(--color-dark);
+}
+
+h1, h2, h3, h4, h5, h6, .font-serif {
+  font-family: 'Cinzel', serif;
+}
+
+/* Micro-animations */
+.hover-scale {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.hover-scale:hover {
+  transform: scale(1.03);
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.8s ease-out forwards;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-overlay {
+  background: linear-gradient(to right, rgba(0,0,0,0.8), rgba(0,0,0,0.3));
+}
+
+/* Form inputs styling */
+input, select, textarea {
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--color-gold);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
+}
+/* --- Interactive UX Upgrades --- */
+
+/* Scroll Reveal Classes */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+}
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Lightbox Base Styles */
+#lightbox {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.9);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+#lightbox.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+#lightbox img {
+  max-width: 90%;
+  max-height: 90%;
+  object-fit: contain;
+  transform: scale(0.9);
+  transition: transform 0.3s ease;
+  border-radius: 8px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+#lightbox.active img {
+  transform: scale(1);
+}
+
+/* Navbar smooth transition override */
+.nav-scrolled {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
