@@ -60,14 +60,12 @@ app.post('/api/enquire', async (req, res) => {
         };
 
         if (transporter) {
-            transporter.sendMail(mailOptions, (error, info) => {
-                if (error) {
-                    console.error('Email error:', error);
-                    // Still return success for user even if email fails, as it's saved in DB
-                } else {
-                    console.log('Email sent: ' + info.response);
-                }
-            });
+            try {
+                const info = await transporter.sendMail(mailOptions);
+                console.log('Email sent: ' + info.response);
+            } catch (error) {
+                console.error('Email error:', error);
+            }
         } else {
             console.log("\n--- SIMULATED EMAIL ---");
             console.log(`To: ${mailOptions.to}`);
