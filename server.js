@@ -86,3 +86,6 @@ app.post('/api/enquire', async (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
+
+// Export the Express API for Vercel
+module.exports = app;
