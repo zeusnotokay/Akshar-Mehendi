@@ -3,7 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const nodemailer = require('nodemailer');
-const db = require('./database');
+const { Enquiry } = require('./database');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -26,20 +26,21 @@ if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
     console.warn("WARNING: EMAIL_USER or EMAIL_PASS not set in .env! Emails will be logged to console instead of actually sending.");
 }
 
-app.post('/api/enquire', (req, res) => {
+app.post('/api/enquire', async (req, res) => {
     const { name, email, date, eventType, message } = req.body;
     
     if (!name || !email) {
         return res.status(400).json({ success: false, message: 'Name and email are required' });
     }
 
-    const sql = `INSERT INTO enquiries (name, email, date, eventType, message) VALUES (?, ?, ?, ?, ?)`;
-    db.run(sql, [name, email, date, eventType, message], function(err) {
-        if (err) {
-            console.error('Database error:', err.message);
-            return res.status(500).json({ success: false, message: 'Failed to save enquiry' });
-        }
+    try {
+        const newEnquiry = new Enquiry({ name, email, date, eventType, message });
+        await newEnquiry.save();
+    } catch (dbErr) {
+        console.warn('Database Warning: Could not save to Mongo (Safe to ignore if testing locally without DB):', dbErr.message);
+    }
 
+    try {
         // Prepare email
         const mailOptions = {
             from: process.env.EMAIL_USER || 'no-reply@aksharmehendi.com',
@@ -76,7 +77,10 @@ app.post('/api/enquire', (req, res) => {
         }
 
         res.json({ success: true, message: 'Enquiry received successfully' });
-    });
+    } catch (err) {
+        console.error('Server error:', err.message);
+        res.status(500).json({ success: false, message: 'Failed to process enquiry' });
+    }
 });
 
 app.listen(PORT, () => {

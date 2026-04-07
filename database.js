@@ -1,24 +1,30 @@
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+const mongoose = require('mongoose');
 
-const dbPath = path.resolve(__dirname, 'akshar-mehendi.db');
+const mongoURI = process.env.MONGO_URI;
 
-const db = new sqlite3.Database(dbPath, (err) => {
-    if (err) {
-        console.error('Error connecting to the database:', err.message);
-    } else {
-        console.log('Connected to the SQLite database.');
-        // Create table if it doesn't exist
-        db.run(`CREATE TABLE IF NOT EXISTS enquiries (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            email TEXT NOT NULL,
-            date TEXT,
-            eventType TEXT,
-            message TEXT,
-            createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
-        )`);
-    }
+if (!mongoURI) {
+    console.warn("WARNING: MONGO_URI not found in .env! Database connection will fail unless provided.");
+}
+
+mongoose.connect(mongoURI || 'mongodb://localhost:27017/FallbackDB', {
+    // Mongoose 6+ options are default, but safely connects anyway
+}).then(() => {
+    console.log('Connected to MongoDB.');
+}).catch((err) => {
+    console.error('Error connecting to MongoDB:', err.message);
+    console.error('Please ensure MONGO_URI is set in your .env file.');
 });
 
-module.exports = db;
+// Define Enquiry Schema
+const enquirySchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    email: { type: String, required: true },
+    date: { type: String },
+    eventType: { type: String },
+    message: { type: String },
+    createdAt: { type: Date, default: Date.now }
+});
+
+const Enquiry = mongoose.model('Enquiry', enquirySchema);
+
+module.exports = { Enquiry };
