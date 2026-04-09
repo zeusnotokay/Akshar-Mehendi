@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Akshar Mehendi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        maroon: '#6C2B1D',
+                        gold: '#D4AF37',
+                        cream: '#FAF9F6',
+                        dark: '#1A1A1A'
+                    },
+                    fontFamily: {
+                        serif: ['Cinzel', 'serif'],
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    backgroundImage: {
+                        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+        
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #faf9f6;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #e5e7eb;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #d1d5db;
+        }
+    </style>
+</head>
+<body class="bg-[#f0f0f5] text-dark font-sans relative min-h-screen overflow-x-hidden pt-24">
+    <!-- Abstract Background Pattern -->
+    <div class="fixed inset-0 z-[-1] pointer-events-none overflow-hidden">
+        <div class="absolute -top-40 -right-40 w-96 h-96 bg-gold/20 rounded-full blur-[100px]"></div>
+        <div class="absolute top-[40%] -left-40 w-[500px] h-[500px] bg-maroon/10 rounded-full blur-[120px]"></div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="fixed inset-0 z-[100] bg-dark/40 backdrop-blur-md flex items-center justify-center transition-all duration-500">
+        <div class="bg-white/90 backdrop-blur-xl p-10 rounded-[2rem] shadow-2xl border border-white/50 max-w-md w-full mx-4 transform transition-all duration-500 scale-100">
+            <div class="flex justify-center mb-8 relative">
+                <div class="absolute inset-0 bg-gold blur-2xl opacity-20 rounded-full w-24 h-24 mx-auto"></div>
+                <img src="images/logo.jpg" alt="Logo" class="w-24 h-24 rounded-full border-4 border-white object-cover shadow-lg relative z-10">
+            </div>
+            <h2 class="text-3xl font-serif font-bold text-dark mb-1 text-center">Akshar Admin</h2>
+            <p class="text-center text-gray-500 mb-8 font-medium">Please authenticate to continue.</p>
+            <form id="login-form">
+                <div class="mb-6 relative group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-maroon transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                    </div>
+                    <input type="password" id="password" required placeholder="Enter standard password" class="w-full pl-12 pr-5 py-4 border-0 bg-gray-100/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-maroon/50 transition-all text-dark placeholder-gray-400 shadow-inner">
+                </div>
+                <div id="login-error" class="hidden text-red-500 text-sm mb-6 text-center font-medium bg-red-50/80 p-3 rounded-xl border border-red-100">Incorrect password. Please try again.</div>
+                <button type="submit" class="w-full bg-gradient-to-r from-maroon to-[#551f14] text-white font-medium py-4 rounded-2xl hover:shadow-[0_8px_25px_rgba(108,43,29,0.35)] hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+                    <span class="relative z-10 flex flex-col justify-center items-center h-full">Authenticate</span>
+                    <div class="absolute inset-0 h-full w-full bg-white/20 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-500 ease-out"></div>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dashboard Content -->
+    <div id="dashboard" class="hidden min-h-screen flex flex-col">
+        <!-- Floating Modern Navbar -->
+        <nav class="fixed top-6 left-4 right-4 md:left-8 md:right-8 lg:left-auto lg:right-auto lg:w-full lg:max-w-7xl lg:mx-auto z-50 bg-white/80 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/60 rounded-2xl px-6 py-4 flex justify-between items-center transition-all">
+            <div class="font-serif font-bold text-xl md:text-2xl flex items-center gap-3 text-dark">
+                <img src="images/logo.jpg" alt="Logo" class="w-10 h-10 rounded-full object-cover shadow-sm">
+                Akshar Portfolio
+            </div>
+            <button id="logout-btn" class="text-sm font-semibold text-gray-500 hover:text-maroon transition bg-gray-100 px-5 py-2.5 rounded-xl hover:bg-maroon/10 flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                <span class="hidden sm:inline">Sign Out</span>
+            </button>
+        </nav>
+
+        <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full relative z-0">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-10 gap-4">
+                <div>
+                    <h1 class="text-4xl font-serif font-bold text-dark tracking-tight">Booking Overview</h1>
+                    <p class="text-gray-500 mt-2 font-medium">Real-time tracking of all client requests</p>
+                </div>
+                <button onclick="fetchEnquiries()" class="flex items-center gap-2 bg-white border border-gray-200 text-dark px-5 py-2.5 rounded-xl hover:border-gold hover:text-gold hover:shadow-md transition-all font-medium text-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    Refresh Data
+                </button>
+            </div>
+            
+            <!-- Statistics Cards -->
+            <div id="stats-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 hidden">
+                <!-- Stat 1 -->
+                <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 p-8 flex flex-col justify-center relative overflow-hidden group hover:shadow-[0_20px_40px_rgba(0,0,0,0.05)] hover:-translate-y-1 transition-all duration-300 cursor-default">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 rounded-full bg-maroon/10 text-maroon flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                        </div>
+                    </div>
+                    <div class="text-5xl font-serif font-bold text-dark mb-1" id="stat-total">0</div>
+                    <div class="text-gray-500 text-sm font-semibold uppercase tracking-widest mt-2">Total Enquiries</div>
+                </div>
+                
+                <!-- Stat 2 -->
+                <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 p-8 flex flex-col justify-center relative overflow-hidden group hover:shadow-[0_20px_40px_rgba(0,0,0,0.05)] hover:-translate-y-1 transition-all duration-300 cursor-default">
+                    <div class="absolute -right-6 -bottom-6 text-gold/10 group-hover:text-gold/20 transition-colors duration-500">
+                        <svg class="w-32 h-32" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                    </div>
+                    <div class="text-5xl font-serif font-bold text-dark mb-1" id="stat-bridal">0</div>
+                    <div class="text-maroon text-sm font-semibold uppercase tracking-widest mt-2 relative z-10">Bridal Requests</div>
+                </div>
+
+                <!-- Stat 3 -->
+                <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 p-8 flex flex-col justify-center relative overflow-hidden group hover:shadow-[0_20px_40px_rgba(0,0,0,0.05)] hover:-translate-y-1 transition-all duration-300 cursor-default">
+                    <div class="text-5xl font-serif font-bold text-dark mb-1" id="stat-party">0</div>
+                    <div class="text-gray-500 text-sm font-semibold uppercase tracking-widest mt-2">Party / Guest</div>
+                </div>
+
+                <!-- Stat 4 -->
+                <div class="bg-gradient-to-br from-dark to-gray-800 rounded-[2rem] shadow-xl p-8 flex flex-col justify-center relative overflow-hidden group hover:-translate-y-1 transition-transform duration-300 cursor-default">
+                    <div class="absolute right-0 top-0 w-32 h-32 bg-gold/20 rounded-bl-full group-hover:bg-gold/30 transition-colors duration-500"></div>
+                    <div class="text-5xl font-serif font-bold text-white mb-1 relative z-10" id="stat-other">0</div>
+                    <div class="text-gold text-sm font-semibold uppercase tracking-widest mt-2 relative z-10">Other / Misc</div>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3 mb-6">
+                <div class="h-8 w-1.5 bg-maroon rounded-full"></div>
+                <h2 class="text-2xl font-serif font-bold text-dark">Recent Submissions</h2>
+            </div>
+
+            <!-- Table Container -->
+            <div class="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden relative">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-100">
+                        <thead class="bg-gray-50/50">
+                            <tr>
+                                <th class="px-8 py-6 text-left text-xs font-bold text-gray-400 uppercase tracking-[0.2em]">Date Received</th>
+                                <th class="px-8 py-6 text-left text-xs font-bold text-gray-400 uppercase tracking-[0.2em]">Client Details</th>
+                                <th class="px-8 py-6 text-left text-xs font-bold text-gray-400 uppercase tracking-[0.2em]">Event Info</th>
+                                <th class="px-8 py-6 text-right text-xs font-bold text-gray-400 uppercase tracking-[0.2em]">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="enquiries-tbody" class="bg-white divide-y divide-gray-50">
+                            <!-- Rows will be injected here -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Loading State -->
+                <div id="loading-state" class="p-24 text-center flex flex-col items-center gap-6">
+                    <div class="relative w-16 h-16">
+                        <div class="absolute inset-0 border-4 border-gray-100 rounded-full"></div>
+                        <div class="absolute inset-0 border-4 border-maroon rounded-full border-t-transparent animate-spin"></div>
+                    </div>
+                    <p class="text-gray-400 font-medium tracking-wide">Syncing data...</p>
+                </div>
+                
+                <!-- Empty State -->
+                <div id="empty-state" class="hidden p-24 text-center flex flex-col items-center gap-5">
+                    <div class="bg-cream p-6 rounded-full text-gold">
+                        <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
+                    </div>
+                    <div>
+                        <p class="text-dark font-bold text-xl font-serif">Inbox is empty</p>
+                        <p class="text-gray-500 mt-2">No enquiries found in the database. When someone books a session, it will show up here.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <p class="text-center text-xs text-gray-400 mt-10 tracking-widest uppercase">Akshar Mehendi Secured Dashboard</p>
+        </main>
+    </div>
+
+    <!-- Message Modal view -->
+    <div id="message-modal" class="fixed inset-0 z-[120] bg-dark/60 backdrop-blur-sm flex items-center justify-center hidden opacity-0 transition-all duration-400">
+        <div class="bg-white rounded-[2rem] shadow-2xl max-w-2xl w-full mx-4 overflow-hidden transform scale-95 transition-transform duration-400 border border-white/20 relative">
+            <!-- Decorative Modal Header Background -->
+            <div class="absolute top-0 left-0 right-0 h-32 bg-gradient-to-r from-cream to-white border-b border-gray-100 z-0"></div>
+            
+            <div class="px-10 py-8 relative z-10 flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-white rounded-full shadow-sm border border-gray-100 flex items-center justify-center text-maroon">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-serif font-bold text-dark">Client Message</h3>
+                        <p class="text-sm text-gray-500 font-medium mt-1" id="msg-client-name">Loading...</p>
+                    </div>
+                </div>
+                <button id="close-msg" class="w-10 h-10 rounded-full bg-white shadow-sm border border-gray-100 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="px-10 pb-10 pt-4 relative z-10">
+                <div class="bg-gray-50 p-8 rounded-3xl border border-gray-100">
+                    <div id="msg-content" class="text-dark leading-relaxed whitespace-pre-wrap font-medium text-lg min-h-[100px]"></div>
+                </div>
+                <div class="mt-8 flex justify-end gap-4">
+                    <button id="close-msg-btn" class="px-6 py-3 rounded-xl font-medium text-gray-600 hover:bg-gray-100 transition">Close Window</button>
+                    <a id="msg-reply-btn" href="#" class="bg-gradient-to-r from-maroon to-[#551f14] text-white px-8 py-3 rounded-xl font-medium hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                        Reply via Email
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const loginModal = document.getElementById('login-modal');
+        const dashboard = document.getElementById('dashboard');
+        const loginForm = document.getElementById('login-form');
+        const loginError = document.getElementById('login-error');
+        const tbody = document.getElementById('enquiries-tbody');
+        const loadingState = document.getElementById('loading-state');
+        const emptyState = document.getElementById('empty-state');
+        const msgModal = document.getElementById('message-modal');
+        
+        // Hide scrollbar initially if login modal is up
+        document.body.style.overflow = 'hidden';
+
+        let token = sessionStorage.getItem('adminToken');
+
+        // Check if already logged in this session
+        if (token) {
+            loginModal.classList.add('opacity-0', 'pointer-events-none');
+            fetchEnquiries();
+        }
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            token = document.getElementById('password').value;
+            fetchEnquiries();
+        });
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            sessionStorage.removeItem('adminToken');
+            token = null;
+            dashboard.classList.add('hidden');
+            loginModal.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
+            document.body.style.overflow = 'hidden';
+            document.getElementById('password').value = '';
+        });
+
+        async function fetchEnquiries() {
+            loginError.classList.add('hidden');
+            loadingState.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+            tbody.innerHTML = '';
+            
+            try {
+                const res = await fetch('/api/enquiries', {
+                    headers: { 'Authorization': token }
+                });
+                
+                if (res.status === 401) {
+                    throw new Error('Unauthorized');
+                }
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    sessionStorage.setItem('adminToken', token);
+                    
+                    // Smooth transition to dashboard
+                    loginModal.classList.add('opacity-0');
+                    setTimeout(() => {
+                        loginModal.classList.add('hidden');
+                        document.body.style.overflow = 'auto'; // allow scrolling again
+                        dashboard.classList.remove('hidden');
+                        dashboard.classList.add('animate-fade-in');
+                        renderEnquiries(data.enquiries);
+                    }, 500);
+                }
+            } catch (err) {
+                if (err.message === 'Unauthorized') {
+                    loginError.classList.remove('hidden');
+                    sessionStorage.removeItem('adminToken');
+                    // Add slight shake to login modal
+                    loginModal.querySelector('> div').classList.add('animate-pulse');
+                    setTimeout(() => loginModal.querySelector('> div').classList.remove('animate-pulse'), 500);
+                } else {
+                    alert('Error fetching data. Check server logs.');
+                }
+                loadingState.classList.add('hidden');
+            }
+        }
+
+        function renderEnquiries(enquiries) {
+            loadingState.classList.add('hidden');
+            
+            if (!enquiries || enquiries.length === 0) {
+                emptyState.classList.remove('hidden');
+                document.getElementById('stats-container').classList.add('hidden');
+                return;
+            }
+            
+            // Calculate and display stats
+            document.getElementById('stats-container').classList.remove('hidden');
+            
+            // Count animation
+            animateValue('stat-total', 0, enquiries.length, 1000);
+            
+            const bridalCount = enquiries.filter(e => e.eventType && e.eventType.toLowerCase().includes('bridal')).length;
+            animateValue('stat-bridal', 0, bridalCount, 1000);
+            
+            const partyCount = enquiries.filter(e => e.eventType && e.eventType.toLowerCase().includes('party')).length;
+            animateValue('stat-party', 0, partyCount, 1000);
+            
+            animateValue('stat-other', 0, enquiries.length - bridalCount - partyCount, 1000);
+
+            enquiries.forEach((enq, index) => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50/80 transition-colors group border-b border-gray-50 last:border-0';
+                
+                const submittedDate = enq.createdAt ? new Date(enq.createdAt).toLocaleDateString('en-US', {
+                    year: 'numeric', month: 'long', day: 'numeric'
+                }) : 'N/A';
+                
+                tr.innerHTML = `
+                    <td class="px-8 py-6 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-500">${submittedDate}</div>
+                    </td>
+                    <td class="px-8 py-6 whitespace-nowrap">
+                        <div class="text-base font-bold text-dark group-hover:text-maroon transition-colors">${enq.name}</div>
+                        <div class="text-sm text-gray-500 mt-1"><a href="mailto:${enq.email}" class="hover:underline">${enq.email}</a></div>
+                    </td>
+                    <td class="px-8 py-6 whitespace-nowrap">
+                        <div class="inline-flex items-center px-4 py-1.5 rounded-xl text-xs font-bold ${getBadgeColor(enq.eventType)} mb-2 border">
+                            ${enq.eventType || 'Not specified'}
+                        </div>
+                        <div class="text-sm text-gray-500 flex items-center gap-1.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            ${enq.date ? enq.date : 'Unscheduled'}
+                        </div>
+                    </td>
+                    <td class="px-8 py-6 text-right">
+                        <button onclick='openMessageHtml(${JSON.stringify(enq).replace(/'/g, "\\'")})' class="bg-gray-50 text-dark border border-gray-200 px-5 py-2.5 rounded-xl font-medium text-sm hover:bg-dark hover:text-white hover:border-dark transition-all focus:outline-none focus:ring-2 focus:ring-gray-200">
+                            View Details
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Helper to color code badges
+        function getBadgeColor(type) {
+            if(!type) return 'bg-gray-50 text-gray-600 border-gray-200';
+            const lower = type.toLowerCase();
+            if(lower.includes('bridal')) return 'bg-orange-50 text-orange-700 border-orange-200';
+            if(lower.includes('party')) return 'bg-blue-50 text-blue-700 border-blue-200';
+            return 'bg-gray-100 text-gray-700 border-gray-200';
+        }
+
+        // Number animation function
+        function animateValue(id, start, end, duration) {
+            const obj = document.getElementById(id);
+            if(!obj || end === 0) return;
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = Math.floor(progress * (end - start) + start);
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        // Modal logic
+        function openMessageHtml(enq) {
+            document.getElementById('msg-client-name').textContent = 'From: ' + enq.name;
+            document.getElementById('msg-content').textContent = enq.message || 'No additional message was provided by the client.';
+            document.getElementById('msg-reply-btn').href = `mailto:${enq.email}?subject=Re: Your Booking Enquiry at Akshar Mehendi`;
+            
+            msgModal.classList.remove('hidden');
+            setTimeout(() => {
+                msgModal.classList.remove('opacity-0');
+                msgModal.querySelector('div').classList.remove('scale-95');
+                msgModal.querySelector('div').classList.add('scale-100');
+            }, 10);
+        }
+
+        document.getElementById('close-msg').addEventListener('click', closeMsgModal);
+        document.getElementById('close-msg-btn').addEventListener('click', closeMsgModal);
+        
+        msgModal.addEventListener('click', (e) => {
+            if (e.target === msgModal) closeMsgModal();
+        });
+
+        function closeMsgModal() {
+            msgModal.classList.add('opacity-0');
+            msgModal.querySelector('div').classList.remove('scale-100');
+            msgModal.querySelector('div').classList.add('scale-95');
+            setTimeout(() => {
+                msgModal.classList.add('hidden');
+            }, 400);
+        }
+    </script>
+</body>
+</html>

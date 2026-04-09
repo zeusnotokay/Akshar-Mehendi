@@ -59,18 +59,47 @@ app.post('/api/enquire', async (req, res) => {
             `
         };
 
+        // Prepare client confirmation email
+        const clientMailOptions = {
+            from: process.env.EMAIL_USER || 'no-reply@aksharmehendi.com',
+            to: email, // client email
+            subject: 'Confirmation: Your Booking Enquiry - Akshar Mehendi',
+            html: `
+                <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; color: #1A1A1A;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                        <img src="cid:logo" alt="Akshar Mehendi Logo" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
+                        <h1 style="color: #6C2B1D; margin: 0; font-family: serif;">Akshar Mehendi</h1>
+                    </div>
+                    <p>Hello ${name},</p>
+                    <p>Thank you for reaching out! We have successfully received your enquiry for <strong>${eventType || 'henna services'}</strong>.</p>
+                    <p>We will review your details and get back to you shortly with availability and a tailored quote.</p>
+                    <br>
+                    <p>Best regards,</p>
+                    <p style="color: #6C2B1D; font-weight: bold;">The Akshar Mehendi Team</p>
+                </div>
+            `,
+            attachments: [{
+                filename: 'logo.jpg',
+                path: path.join(__dirname, 'public', 'images', 'logo.jpg'),
+                cid: 'logo'
+            }]
+        };
+
         if (transporter) {
             try {
-                const info = await transporter.sendMail(mailOptions);
-                console.log('Email sent: ' + info.response);
+                await transporter.sendMail(mailOptions);
+                await transporter.sendMail(clientMailOptions);
+                console.log('Emails sent successfully');
             } catch (error) {
                 console.error('Email error:', error);
             }
         } else {
-            console.log("\n--- SIMULATED EMAIL ---");
+            console.log("\n--- SIMULATED NOTIFICATION EMAIL ---");
             console.log(`To: ${mailOptions.to}`);
             console.log(`Subject: ${mailOptions.subject}`);
-            console.log(`Message: \n${mailOptions.html}`);
+            console.log("\n--- SIMULATED CLIENT EMAIL ---");
+            console.log(`To: ${clientMailOptions.to}`);
+            console.log(`Subject: ${clientMailOptions.subject}`);
             console.log("------------------------\n");
         }
 
@@ -78,6 +107,35 @@ app.post('/api/enquire', async (req, res) => {
     } catch (err) {
         console.error('Server error:', err.message);
         res.status(500).json({ success: false, message: 'Failed to process enquiry' });
+    }
+});
+
+// Admin API to get all enquiries
+app.get('/api/enquiries', async (req, res) => {
+    const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+    
+    if (req.headers.authorization !== adminPassword) {
+        return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+
+    try {
+        const mongoose = require('mongoose');
+        // Check if mongoose is not connected (1) and not connecting (2)
+        if (mongoose.connection.readyState !== 1 && mongoose.connection.readyState !== 2) {
+            console.warn('Database not connected. Returning empty list to allow dashboard testing.');
+            return res.json({ success: true, enquiries: [] });
+        }
+
+        // Add a 3 second timeout to the query so it doesn't hang for 10 seconds locally doing nothing
+        const enquiries = await Enquiry.find().sort({ createdAt: -1 }).maxTimeMS(3000).exec();
+        res.json({ success: true, enquiries });
+    } catch (err) {
+        console.error('Error fetching enquiries:', err.message);
+        // If it was just a timeout, return empty array to prevent 500 error breaking the UI
+        if (err.message && err.message.includes('buffering timed out')) {
+            return res.json({ success: true, enquiries: [] });
+        }
+        res.status(500).json({ success: false, message: 'Failed to fetch enquiries' });
     }
 });
 
