@@ -1,4 +1,7 @@
 const mongoose = require('mongoose');
+const dns = require('dns');
+// Use external DNS specifically to fix 'querySrv ECONNREFUSED' errors on local connections
+dns.setServers(['8.8.8.8', '8.8.4.4']);
 
 const mongoURI = process.env.MONGO_URI;
 
@@ -7,7 +10,7 @@ if (!mongoURI) {
 }
 
 mongoose.connect(mongoURI || 'mongodb://localhost:27017/FallbackDB', {
-    // Mongoose 6+ options are default, but safely connects anyway
+    serverSelectionTimeoutMS: 3000, // Reduced from 30s to 3s to prevent hangs
 }).then(() => {
     console.log('Connected to MongoDB.');
 }).catch((err) => {

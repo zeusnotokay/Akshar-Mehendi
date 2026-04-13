@@ -288,6 +288,8 @@
                         dashboard.classList.add('animate-fade-in');
                         renderEnquiries(data.enquiries);
                     }, 500);
+                } else {
+                    throw new Error(data.message || 'Error fetching data. Check server logs.');
                 }
             } catch (err) {
                 if (err.message === 'Unauthorized') {
@@ -297,7 +299,7 @@
                     loginModal.querySelector('> div').classList.add('animate-pulse');
                     setTimeout(() => loginModal.querySelector('> div').classList.remove('animate-pulse'), 500);
                 } else {
-                    alert('Error fetching data. Check server logs.');
+                    alert('Error: ' + err.message);
                 }
                 loadingState.classList.add('hidden');
             }

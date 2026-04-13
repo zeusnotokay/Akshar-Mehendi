@@ -34,8 +34,16 @@ app.post('/api/enquire', async (req, res) => {
     }
 
     try {
-        const newEnquiry = new Enquiry({ name, email, date, eventType, message });
-        await newEnquiry.save();
+        const mongoose = require('mongoose');
+        if (mongoose.connection.readyState !== 1 && mongoose.connection.readyState !== 2) {
+             console.warn('Database Warning: Not connected. Skipping db save (Safe for local UI testing).');
+        } else {
+             const newEnquiry = new Enquiry({ name, email, date, eventType, message });
+             await Promise.race([
+                 newEnquiry.save(),
+                 new Promise((_, reject) => setTimeout(() => reject(new Error('Mongoose buffer timeout')), 2500))
+             ]);
+        }
     } catch (dbErr) {
         console.warn('Database Warning: Could not save to Mongo (Safe to ignore if testing locally without DB):', dbErr.message);
     }
@@ -86,13 +94,12 @@ app.post('/api/enquire', async (req, res) => {
         };
 
         if (transporter) {
-            try {
-                await transporter.sendMail(mailOptions);
-                await transporter.sendMail(clientMailOptions);
-                console.log('Emails sent successfully');
-            } catch (error) {
-                console.error('Email error:', error);
-            }
+            // Send emails in the background (asynchronously) so the user doesn't have to wait
+            Promise.all([
+                transporter.sendMail(mailOptions),
+                transporter.sendMail(clientMailOptions)
+            ]).then(() => console.log('Emails sent successfully'))
+              .catch((error) => console.error('Email error:', error));
         } else {
             console.log("\n--- SIMULATED NOTIFICATION EMAIL ---");
             console.log(`To: ${mailOptions.to}`);
@@ -122,8 +129,8 @@ app.get('/api/enquiries', async (req, res) => {
         const mongoose = require('mongoose');
         // Check if mongoose is not connected (1) and not connecting (2)
         if (mongoose.connection.readyState !== 1 && mongoose.connection.readyState !== 2) {
-            console.warn('Database not connected. Returning empty list to allow dashboard testing.');
-            return res.json({ success: true, enquiries: [] });
+            console.error('Database not connected. Returning 503 error to frontend.');
+            return res.status(503).json({ success: false, message: 'Database disconnected. Check MongoDB Network Access (IP Whitelist).' });
         }
 
         // Add a 3 second timeout to the query so it doesn't hang for 10 seconds locally doing nothing
