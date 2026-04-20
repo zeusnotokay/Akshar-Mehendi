@@ -28,7 +28,7 @@ if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
 
 app.post('/api/enquire', async (req, res) => {
     const { name, email, date, eventType, message } = req.body;
-    
+
     if (!name || !email) {
         return res.status(400).json({ success: false, message: 'Name and email are required' });
     }
@@ -36,13 +36,13 @@ app.post('/api/enquire', async (req, res) => {
     try {
         const mongoose = require('mongoose');
         if (mongoose.connection.readyState !== 1 && mongoose.connection.readyState !== 2) {
-             console.warn('Database Warning: Not connected. Skipping db save (Safe for local UI testing).');
+            console.warn('Database Warning: Not connected. Skipping db save (Safe for local UI testing).');
         } else {
-             const newEnquiry = new Enquiry({ name, email, date, eventType, message });
-             await Promise.race([
-                 newEnquiry.save(),
-                 new Promise((_, reject) => setTimeout(() => reject(new Error('Mongoose buffer timeout')), 2500))
-             ]);
+            const newEnquiry = new Enquiry({ name, email, date, eventType, message });
+            await Promise.race([
+                newEnquiry.save(),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Mongoose buffer timeout')), 2500))
+            ]);
         }
     } catch (dbErr) {
         console.warn('Database Warning: Could not save to Mongo (Safe to ignore if testing locally without DB):', dbErr.message);
@@ -52,7 +52,7 @@ app.post('/api/enquire', async (req, res) => {
         // Prepare email
         const mailOptions = {
             from: process.env.EMAIL_USER || 'no-reply@aksharmehendi.com',
-            to: 'rajpanchal7706@gmail.com',
+            to: 'aksharmehendi@gmail.com',
             subject: `New Enquiry from ${name} - Akshar Mehendi`,
             html: `
                 <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px; border-radius: 8px;">
@@ -99,7 +99,7 @@ app.post('/api/enquire', async (req, res) => {
                 transporter.sendMail(mailOptions),
                 transporter.sendMail(clientMailOptions)
             ]).then(() => console.log('Emails sent successfully'))
-              .catch((error) => console.error('Email error:', error));
+                .catch((error) => console.error('Email error:', error));
         } else {
             console.log("\n--- SIMULATED NOTIFICATION EMAIL ---");
             console.log(`To: ${mailOptions.to}`);
@@ -120,7 +120,7 @@ app.post('/api/enquire', async (req, res) => {
 // Admin API to get all enquiries
 app.get('/api/enquiries', async (req, res) => {
     const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
-    
+
     if (req.headers.authorization !== adminPassword) {
         return res.status(401).json({ success: false, message: 'Unauthorized' });
     }
