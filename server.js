@@ -94,12 +94,16 @@ app.post('/api/enquire', async (req, res) => {
         };
 
         if (transporter) {
-            // Send emails in the background (asynchronously) so the user doesn't have to wait
-            Promise.all([
-                transporter.sendMail(mailOptions),
-                transporter.sendMail(clientMailOptions)
-            ]).then(() => console.log('Emails sent successfully'))
-                .catch((error) => console.error('Email error:', error));
+            // MUST await on Serverless functions (like Vercel) otherwise the process is killed before emails actually send!
+            try {
+                await Promise.all([
+                    transporter.sendMail(mailOptions),
+                    transporter.sendMail(clientMailOptions)
+                ]);
+                console.log('Emails sent successfully');
+            } catch (error) {
+                console.error('Email error:', error);
+            }
         } else {
             console.log("\n--- SIMULATED NOTIFICATION EMAIL ---");
             console.log(`To: ${mailOptions.to}`);
